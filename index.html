@@ -1,1 +1,18 @@
-Hello world
+<div id="posts-list"></div>
+<script>
+  async function loadPosts() {
+    const response = await fetch("posts/posts.json");
+    const posts = await response.json();
+
+    const listContainer = document.getElementById("posts-list");
+    posts.forEach((filename) => {
+      const postLink = document.createElement("a");
+      postLink.href = `#/${filename}`;
+      postLink.innerText = filename.replace(".md", "").replace(/-/g, " ");
+      listContainer.appendChild(postLink);
+      listContainer.appendChild(document.createElement("br"));
+    });
+  }
+
+  loadPosts();
+</script>

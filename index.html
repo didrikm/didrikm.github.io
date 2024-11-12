@@ -7,7 +7,7 @@
     const listContainer = document.getElementById("posts-list");
     posts.forEach((filename) => {
       const postLink = document.createElement("a");
-      postLink.href = `#/${filename}`;
+      postLink.href = `#${filename}`; 
       postLink.innerText = filename.replace(".md", "").replace(/-/g, " ");
       listContainer.appendChild(postLink);
       listContainer.appendChild(document.createElement("br"));
@@ -16,3 +16,19 @@
 
   loadPosts();
 </script>
+
+<div id="post-content"></div>
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<script>
+  async function loadMarkdown(filename) {
+    const response = await fetch(`posts/${filename}`);
+    const markdown = await response.text();
+    document.getElementById("post-content").innerHTML = marked(markdown);
+  }
+
+  window.addEventListener("hashchange", () => {
+    const filename = location.hash.slice(1);
+    if (filename) loadMarkdown(filename);
+  });
+</script>
+

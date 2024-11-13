@@ -1,34 +1,59 @@
-<div id="posts-list"></div>
-<script>
-  async function loadPosts() {
-    const response = await fetch("posts/posts.json");
-    const posts = await response.json();
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>didrikm.github.io</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div>
+      <pre id="ascii"><code>
+▗▄▄▄ ▗▄▄▄▖▗▄▄▄ ▗▄▄▖ ▗▄▄▄▖▗▖ ▗▖▗▖  ▗▖   ▗▄▄▖▗▄▄▄▖▗▄▄▄▖▗▖ ▗▖▗▖ ▗▖▗▄▄▖   ▗▄▄▄▖ ▗▄▖ 
+▐▌  █  █  ▐▌  █▐▌ ▐▌  █  ▐▌▗▞▘▐▛▚▞▜▌  ▐▌     █    █  ▐▌ ▐▌▐▌ ▐▌▐▌ ▐▌    █  ▐▌ ▐▌
+▐▌  █  █  ▐▌  █▐▛▀▚▖  █  ▐▛▚▖ ▐▌  ▐▌  ▐▌▝▜▌  █    █  ▐▛▀▜▌▐▌ ▐▌▐▛▀▚▖    █  ▐▌ ▐▌
+▐▙▄▄▀▗▄█▄▖▐▙▄▄▀▐▌ ▐▌▗▄█▄▖▐▌ ▐▌▐▌  ▐▌██▝▚▄▞▘▗▄█▄▖  █  ▐▌ ▐▌▝▚▄▞▘▐▙▄▞▘██▗▄█▄▖▝▚▄▞▘
+</code></pre>
+    </div>
+    <h2 id="section-header">Posts</h2>
+    <a class="return" href="" onclick="loadMarkdown()"></a>
+    <div id="posts-list"></div>
 
-    const listContainer = document.getElementById("posts-list");
-    posts.forEach((filename) => {
-      const postLink = document.createElement("a");
-      postLink.href = `#${filename}`; 
-      postLink.innerText = filename.replace(".md", "").replace(/-/g, " ");
-      listContainer.appendChild(postLink);
-      listContainer.appendChild(document.createElement("br"));
-    });
-  }
+    <script>
+      async function loadPosts() {
+        document.getElementById("section-header").innerHTML = "Posts";
+        const response = await fetch("posts/posts.json");
+        const posts = await response.json();
+        const listContainer = document.getElementById("posts-list");
+        posts.forEach((filename) => {
+          const postLink = document.createElement("a");
+          postLink.href = `#${filename}`;
+          postLink.innerText = filename.replace(".md", "").replace(/-/g, " ");
+          listContainer.appendChild(postLink);
+          listContainer.appendChild(document.createElement("br"));
+        });
+      }
 
-  loadPosts();
-</script>
+      loadPosts();
+    </script>
 
-<div id="post-content"></div>
-<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-<script>
-  async function loadMarkdown(filename) {
-    const response = await fetch(`posts/${filename}`);
-    const markdown = await response.text();
-    document.getElementById("post-content").innerHTML = marked(markdown);
-  }
+    <div id="post-content"></div>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script>
+      async function loadMarkdown(filename) {
+        const response = await fetch(`posts/${filename}`);
+        const markdown = await response.text();
+        document.getElementById("section-header").innerHTML = "";
+        document.getElementById("posts-list").innerHTML = "";
+        document.getElementsByClassName("return")[0].innerHTML = "Return";
+        document.getElementById("post-content").innerHTML =
+          marked.parse(markdown);
+      }
 
-  window.addEventListener("hashchange", () => {
-    const filename = location.hash.slice(1);
-    if (filename) loadMarkdown(filename);
-  });
-</script>
-
+      window.addEventListener("hashchange", () => {
+        const filename = location.hash.slice(1);
+        if (filename) loadMarkdown(filename);
+      });
+    </script>
+  </body>
+</html>

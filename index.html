@@ -14,46 +14,87 @@
 ▐▌  █  █  ▐▌  █▐▛▀▚▖  █  ▐▛▚▖ ▐▌  ▐▌  ▐▌▝▜▌  █    █  ▐▛▀▜▌▐▌ ▐▌▐▛▀▚▖    █  ▐▌ ▐▌
 ▐▙▄▄▀▗▄█▄▖▐▙▄▄▀▐▌ ▐▌▗▄█▄▖▐▌ ▐▌▐▌  ▐▌██▝▚▄▞▘▗▄█▄▖  █  ▐▌ ▐▌▝▚▄▞▘▐▙▄▞▘██▗▄█▄▖▝▚▄▞▘
 </code></pre>
-    </div>
-    <h2 id="section-header">Posts</h2>
-    <a class="return" href="" onclick="loadMarkdown()"></a>
-    <div id="posts-list"></div>
+<h2 id="section-header">Posts</h2>
+<a class="return" href="#" style="display: none;">Return to Posts</a>
+<div id="posts-list"></div>
+<div id="post-content"></div>
 
-    <script>
-      async function loadPosts() {
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<script>
+    async function loadPosts() {
         document.getElementById("section-header").innerHTML = "Posts";
-        const response = await fetch("posts/posts.json");
-        const posts = await response.json();
-        const listContainer = document.getElementById("posts-list");
-        posts.forEach((filename) => {
-          const postLink = document.createElement("a");
-          postLink.href = `#${filename}`;
-          postLink.innerText = filename.replace(".md", "").replace(/-/g, " ");
-          listContainer.appendChild(postLink);
-          listContainer.appendChild(document.createElement("br"));
-        });
-      }
+        document.getElementById("post-content").innerHTML = "";
+        document.querySelector(".return").style.display = "none";
+        
+        try {
+            const response = await fetch("posts/posts.json");
+            if (!response.ok) throw new Error('Failed to load posts.json');
+            
+            const posts = await response.json();
+            const listContainer = document.getElementById("posts-list");
+            listContainer.innerHTML = "";
 
-      loadPosts();
-    </script>
+            posts.forEach((filename) => {
+                const postLink = document.createElement("a");
+                // Encode the filename properly for the URL
+                postLink.href = `#${encodeURIComponent(filename)}`;
+                // Display the filename without extension and with spaces
+                postLink.innerText = filename
+                    .replace(".md", "")
+                    .replace(/-/g, " ");
+                
+                listContainer.appendChild(postLink);
+                listContainer.appendChild(document.createElement("br"));
+            });
+        } catch (error) {
+            console.error('Error loading posts:', error);
+            document.getElementById("posts-list").innerHTML = 
+                "Error loading posts. Please check the console for details.";
+        }
+    }
 
-    <div id="post-content"></div>
-    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-    <script>
-      async function loadMarkdown(filename) {
-        const response = await fetch(`posts/${filename}`);
-        const markdown = await response.text();
-        document.getElementById("section-header").innerHTML = "";
-        document.getElementById("posts-list").innerHTML = "";
-        document.getElementsByClassName("return")[0].innerHTML = "Return";
-        document.getElementById("post-content").innerHTML =
-          marked.parse(markdown);
-      }
+    async function loadMarkdown(filename) {
+        try {
+            const decodedFilename = decodeURIComponent(filename);
+            const response = await fetch(`posts/${decodedFilename}`);
+            
+            if (!response.ok) throw new Error('Failed to load markdown file');
+            
+            const markdown = await response.text();
+            
+            document.getElementById("section-header").innerHTML = 
+                decodedFilename.replace(".md", "").replace(/-/g, " ");
+            document.getElementById("posts-list").innerHTML = "";
+            document.querySelector(".return").style.display = "block";
+            
+            document.getElementById("post-content").innerHTML = 
+                marked.parse(markdown);
+        } catch (error) {
+            console.error('Error loading markdown:', error);
+            document.getElementById("post-content").innerHTML = 
+                "Error loading post. Please check the console for details.";
+        }
+    }
 
-      window.addEventListener("hashchange", () => {
-        const filename = location.hash.slice(1);
-        if (filename) loadMarkdown(filename);
-      });
-    </script>
+    window.addEventListener("hashchange", () => {
+        const hash = location.hash.slice(1);
+        if (hash) {
+            loadMarkdown(hash);
+        } else {
+            loadPosts();
+        }
+    });
+
+    document.querySelector(".return").addEventListener("click", (e) => {
+        e.preventDefault();
+        window.location.hash = "";
+    });
+
+    if (location.hash) {
+        loadMarkdown(location.hash.slice(1));
+    } else {
+        loadPosts();
+    }
+</script> 
   </body>
 </html>
